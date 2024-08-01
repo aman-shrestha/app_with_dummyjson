@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:app_with_dummyjson/task_3.dart';
+import 'package:app_with_dummyjson/task_2_and_3.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
