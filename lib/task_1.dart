@@ -11,76 +11,43 @@ class TaskOne extends StatefulWidget {
 }
 
 class _TaskOneState extends State<TaskOne> {
-  // Map<String, dynamic> _data = {};
-  // List<String> _dates = [];
-  // List<String> _parameters = [];
-  //
-  // // FETCH CONTENTS FROM THE JSON FILE
-  // Future<void> readJson() async {
-  //   final String response = await rootBundle.loadString('assets/dummy_data.json');
-  //   final Map<String, dynamic> data = json.decode(response);
-  //   setState(() {
-  //     _data = data;
-  //     _dates = data.keys.toList();
-  //     if (_dates.isNotEmpty) {
-  //       _parameters = data[_dates[0]].keys.toList();
-  //     }
-  //   });
-  // }
-  Map<String, dynamic> _data = {};
+  Map<String, Map<String, String>> _data = {};
   List<String> _dates = [];
   List<String> _parameters = [];
-
-  Map<String, dynamic> _data2 = {};
-  List<String> _dates2 = [];
-  List<String> _parameters2 = [];
 
   // FETCH CONTENTS FROM THE JSON FILE
   Future<void> readJson() async {
     final String response = await rootBundle.loadString('assets/dummy_data.json');
-    final Map<String, dynamic> data = json.decode(response);
-    setState(() {
-      _data = data;
-      _dates = data.keys.toList();
-      if (_dates.isNotEmpty) {
-        _parameters = data[_dates[0]].keys.toList();
-      }
-    });
-  }
+    final List<dynamic> jsonData = json.decode(response);
 
-  // CONVERT DATA TO NEW FORMAT
-  Future<void> convertJson() async {
-    if (_data.isEmpty) {
-      print('No data to convert.');
-      return;
+    Map<String, Map<String, String>> parsedData = {};
+    List<String> dates = [];
+    List<String> parameters = [];
+
+    for (var item in jsonData) {
+      String parameter = item['name'];
+      parameters.add(parameter);
+      for (var entry in item['data']) {
+        String date = entry['time'];
+        String value = entry['value'];
+
+        if (!dates.contains(date)) {
+          dates.add(date);
+        }
+
+        if (!parsedData.containsKey(date)) {
+          parsedData[date] = {};
+        }
+        parsedData[date]![parameter] = value;
+      }
     }
 
-    // Extract dates and parameters
-    final List<String> dates = _data.keys.toList();
-    final List<String> parameters = _data[dates[0]].keys.toList();
-
-    // Transform data
-    final Map<String, dynamic> transformedData = {
-      'dates': parameters,  // New list of dates
-      'parameters': dates,  // New list of parameters
-      'data': {
-        for (var parameter in parameters)
-          parameter: {
-            for (var date in dates)
-              date: _data[date][parameter]
-          }
-      }
-    };
-
     setState(() {
-      _data2 = transformedData;
-      _dates2 = transformedData['dates'];
-      _parameters2 = transformedData['parameters'];
+      _data = parsedData;
+      _dates = dates;
+      _parameters = parameters;
     });
-
-    print("Data converted and saved to _data2");
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -122,18 +89,27 @@ class _TaskOneState extends State<TaskOne> {
                     ..._parameters.map((parameter) => TableRow(
                       children: [
                         TableCell(child: Center(child: Text(parameter))),
-                        ..._dates.map((date) => TableCell(child: Center(child: Text(_data[date][parameter].toString())))),
+                        ..._dates.map((date) => TableCell(child: Center(child: Text(_data[date]?[parameter] ?? '-')))),
                       ],
                     )),
                   ],
                 ),
               ),
             ),
-          GestureDetector(onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskThree()),);},child: Text("CONVERT")),
-
+          GestureDetector(
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => TaskTwoAndThree()));
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                "TASK TWO AND THREE",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 }
-
